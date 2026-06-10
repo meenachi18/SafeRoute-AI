@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SafeRoute AI</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Login Screen -->
+        <section id="login-screen" class="screen active">
+            <div class="brand">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-route"></i>
+                </div>
+                <h1>SafeRoute <span>AI</span></h1>
+                <p>Your intelligent journey starts here</p>
+            </div>
+            
+            <div class="login-box glass-card">
+                <h2>Welcome Back</h2>
+                <div class="input-group">
+                    <i class="fa-regular fa-envelope"></i>
+                    <input type="email" placeholder="Email Address" id="email" value="user@example.com">
+                </div>
+                <div class="input-group">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" placeholder="Password" id="password" value="password123">
+                </div>
+                <button type="button" class="primary-btn" id="login-btn">
+    Sign In <i class="fa-solid fa-arrow-right"></i>
+</button>
+            </div>
+        </section>
+
+        <!-- Dashboard Screen -->
+       <section id="dashboard-screen" class="screen">
+            <header>
+                <div class="header-content">
+                    <h2>Dashboard</h2>
+                    <div class="user-avatar">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User Avatar">
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <div class="greeting">
+                    <h3>Hello, Alex</h3>
+                    <p>Where are we heading safely today?</p>
+                </div>
+
+                <div class="route-card glass-card">
+                    <div class="route-inputs">
+                        <div class="input-group">
+                            <i class="fa-solid fa-location-dot text-blue"></i>
+                            <input type="text" id="route-from" placeholder="Current Location">
+                        </div>
+                        <div class="route-line"></div>
+                        <div class="input-group">
+                            <i class="fa-solid fa-location-crosshairs text-pink"></i>
+                            <input type="text" id="route-to" placeholder="Destination">
+                        </div>
+                    </div>
+                    
+                    <button type="button"class="primary-btn pulse-anim" id="check-route-btn">
+                        <i class="fa-solid fa-shield-halved"></i> Check Route
+                    </button>
+                </div>
+
+                <div class="cctv-card glass-card" style="margin-top: 16px; margin-bottom: 24px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                        <i class="fa-solid fa-video text-pink"></i>
+                        <h4 style="margin: 0; font-size: 1.1rem;">CCTV Analysis</h4>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">Upload footage for instant AI hazard detection.</p>
+                    
+                    <input type="file" id="cctv-upload" accept="video/*" style="display: none;">
+                    <label for="cctv-upload" class="upload-area">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span>Select Video File</span>
+                    </label>
+                    <div id="file-name-display" class="file-name">No file selected</div>
+                    <button 
+                        type="button"
+                        class="primary-btn outline-btn"
+                        id="analyze-cctv-btn">
+                        <i class="fa-solid fa-microchip"></i> Analyze Video
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Loading Screen -->
+        <section id="loading-screen" class="screen">
+            <div class="loader-container">
+                <div class="spinner"></div>
+                <h2>Analyzing Route...</h2>
+                <p>AI is evaluating real-time hazards</p>
+                <div class="loading-progress">
+                    <div class="progress-bar"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Result Screen -->
+        <section id="result-screen" class="screen">
+            <header>
+                <button class="back-btn" id="back-to-dashboard">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <h2>Route Analysis</h2>
+                <div style="width: 40px;"></div> <!-- spacer -->
+            </header>
+
+            <div class="content-area">
+                <div class="route-summary glass-card">
+                    <div class="locations">
+                        <div class="loc"><span id="res-from">Home</span></div>
+                        <i class="fa-solid fa-arrow-right"></i>
+                        <div class="loc"><span id="res-to">Office</span></div>
+                    </div>
+                    
+                    <div class="risk-meter" id="risk-meter">
+                        <div class="risk-circle">
+                            <span id="risk-score">24</span>
+                            <small>Risk Score</small>
+                        </div>
+                        <div class="risk-status" id="risk-status">Low Risk</div>
+                    </div>
+                </div>
+
+                <h3 class="section-title">Available Routes</h3>
+                <div class="routes-comparison" style="margin-bottom: 20px;">
+                    <!-- Route 1 (Safe) -->
+                    <div class="route-option-card glass-card route-card-active" id="route-safe-card" style="margin-bottom: 12px; cursor: pointer; transition: all 0.2s;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <span style="font-weight: 600; color: var(--success);"><i class="fa-solid fa-shield-halved"></i> Highway Express</span>
+                            <span class="badge safe">Safer Option</span>
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">Bypasses major active road holes and tree blockages.</p>
+                        <div style="display: flex; gap: 16px; font-size: 0.85rem;">
+                            <span><i class="fa-solid fa-road" style="color: var(--accent);"></i> <strong id="route-safe-dist">12.4 km</strong></span>
+                            <span><i class="fa-solid fa-clock" style="color: var(--warning);"></i> <strong id="route-safe-time">18 mins</strong></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Route 2 (Risky) -->
+                    <div class="route-option-card glass-card" id="route-risky-card" style="cursor: pointer; transition: all 0.2s;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <span style="font-weight: 600; color: var(--warning);"><i class="fa-solid fa-triangle-exclamation"></i> City Shortcut</span>
+                            <span class="badge" style="background: rgba(239, 68, 68, 0.2); color: var(--danger);">Hazardous</span>
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">Shortest path but intersects active pothole clusters.</p>
+                        <div style="display: flex; gap: 16px; font-size: 0.85rem;">
+                            <span><i class="fa-solid fa-road" style="color: var(--accent);"></i> <strong id="route-risky-dist">9.8 km</strong></span>
+                            <span><i class="fa-solid fa-clock" style="color: var(--warning);"></i> <strong id="route-risky-time">22 mins</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+
+                <button class="primary-btn green-btn" id="start-nav-btn">
+                    <i class="fa-solid fa-location-arrow"></i> Start Navigation
+                </button>
+            </div>
+        </section>
+
+        <!-- Map Screen -->
+        <section id="map-screen" class="screen map-bg" style="padding: 0;">
+            <header style="position: absolute; top: 20px; left: 20px; right: 20px; z-index: 10; padding-bottom: 0;">
+                <button class="back-btn" id="map-back-btn" style="background: rgba(15, 23, 42, 0.85); box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+            </header>
+
+            <!-- Floating Map Speedometer Widget -->
+            <div id="map-speed-widget" style="position: absolute; top: 20px; right: 20px; z-index: 10; display: none; padding: 10px 16px; background: rgba(15, 23, 42, 0.85); border-radius: 14px; border: 1px solid rgba(255,255,255,0.15); color: white; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.3); backdrop-filter: blur(8px);">
+                <i class="fa-solid fa-gauge-high text-pink animate-pulse"></i>
+                <span id="live-speed-val">0 km/h</span>
+            </div>
+            
+            <!-- Floating Theme Toggler Button -->
+            <button id="map-theme-btn" style="position: absolute; top: 80px; right: 20px; z-index: 10; width: 44px; height: 44px; border-radius: 50%; background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.15); color: white; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); backdrop-filter: blur(8px); font-size: 1.1rem; transition: all 0.2s;">
+                <i class="fa-solid fa-circle-half-stroke"></i>
+            </button>
+
+            <!-- Floating Voice Reporter Microphone Button -->
+            <button id="map-mic-btn" style="position: absolute; top: 140px; right: 20px; z-index: 10; width: 44px; height: 44px; border-radius: 50%; background: rgba(239, 68, 68, 0.85); border: 1px solid rgba(255,255,255,0.15); color: white; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); backdrop-filter: blur(8px); font-size: 1.1rem; transition: all 0.2s;">
+                <i class="fa-solid fa-microphone"></i>
+            </button>
+
+            <div class="map-container" style="height: 100%; position: relative;">
+                <!-- Real Leaflet Live Map Mount Point -->
+                <div id="live-map" style="width: 100%; height: 100%; z-index: 1;"></div>
+            </div>
+            
+            <div class="map-overlay-card glass-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h3 id="nav-card-title" style="margin: 0; font-size: 1.1rem;">Route Map Overview</h3>
+                    <!-- Dynamic Remaining Tracker widget -->
+                    <div id="nav-countdown-widget" style="display: none; font-size: 0.8rem; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                        <span id="nav-dist-rem" style="font-weight: 700; color: var(--accent);">0.0 km</span> left
+                    </div>
+                </div>
+                
+                <p class="text-danger" id="nav-card-desc" style="margin-bottom: 14px;"><i class="fa-solid fa-triangle-exclamation"></i> Hazards on path</p>
+                
+                <!-- Navigation Mode Selector Toggles -->
+                <div id="nav-mode-selector" style="display: flex; gap: 8px; margin-bottom: 14px;">
+                    <button class="primary-btn outline-btn" id="mode-simulate-btn" style="flex: 1; padding: 10px; font-size: 0.8rem; margin: 0; border-radius: 10px;">
+                        <i class="fa-solid fa-desktop"></i> Simulate
+                    </button>
+                    <button class="primary-btn outline-btn active-toggle" id="mode-live-btn" style="flex: 1; padding: 10px; font-size: 0.8rem; margin: 0; border-radius: 10px;">
+                        <i class="fa-solid fa-person-walking"></i> Real GPS
+                    </button>
+                </div>
+
+                <button class="primary-btn green-btn" id="map-start-nav" style="margin-top: 0; padding: 12px;">
+                    <i class="fa-solid fa-location-arrow"></i> Start Navigation
+                </button>
+            </div>
+        </section>
+
+
+
+        <!-- Hazard Popup Alert -->
+        <div id="hazard-popup" class="popup-overlay hidden">
+            <div class="popup-card glass-card">
+                <div class="popup-icon warning-pulse">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <h2 id="popup-title">Critical Alert</h2>
+                <p id="popup-desc" style="margin-bottom: 16px;">Multiple hazards detected!</p>
+                
+                <!-- Image/Video Container for CCTV feature -->
+                <div id="popup-image-container" style="display: none; margin-bottom: 16px; position: relative;">
+                    <div class="video-hud-wrapper" style="position: relative; width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid var(--danger);">
+                        <video id="popup-video" controls autoplay loop muted style="width: 100%; display: none; outline: none; margin: 0; padding: 0; vertical-align: middle;"></video>
+                        <img id="popup-image" src="cctv_sample.png" alt="CCTV Feed" style="width: 100%; display: none; border-radius: 0; border: none;">
+                        
+                        <!-- AI Holographic HUD Layer -->
+                        <div id="ai-hud-layer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; display: none;">
+                            <!-- Scanning Laser Line -->
+                            <div class="laser-scanner" style="position: absolute; left: 0; width: 100%; height: 3px; background: var(--primary); box-shadow: 0 0 10px var(--primary); animation: scanLaser 4s linear infinite;"></div>
+                            
+                            <!-- Bounding Boxes Container -->
+                            <div id="hud-bounding-boxes" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="popup-hazards" class="popup-hazards-list">
+                    <!-- CCTV Hazards will go here -->
+                </div>
+                <button class="primary-btn danger-btn" id="close-popup-btn">
+                    Acknowledge
+                </button>
+            </div>
+        </div>
+
+        <!-- AI Voice Hazard Reporter Modal -->
+        <div id="voice-report-modal" class="popup-overlay hidden">
+            <div class="popup-card glass-card" style="border-color: var(--accent); max-width: 320px;">
+                <div class="popup-icon warning-pulse" style="color: var(--accent); margin-bottom: 8px;">
+                    <i class="fa-solid fa-microphone" id="voice-mic-icon"></i>
+                </div>
+                <h2 style="color: var(--accent); font-size: 1.4rem; margin-bottom: 6px;">AI Voice Reporter</h2>
+                <p id="voice-status" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">Describe the hazard you see (e.g. "large pothole")...</p>
+                
+                <!-- Voice Activity Waveform Animations -->
+                <div id="speech-waveform" style="display: none; justify-content: center; align-items: center; gap: 6px; margin-bottom: 20px; height: 50px;">
+                    <div style="width: 5px; height: 25px; background: var(--accent); border-radius: 3px; animation: wave 0.8s ease-in-out infinite alternate;"></div>
+                    <div style="width: 5px; height: 40px; background: var(--accent); border-radius: 3px; animation: wave 0.8s ease-in-out infinite alternate; animation-delay: 0.15s;"></div>
+                    <div style="width: 5px; height: 50px; background: var(--accent); border-radius: 3px; animation: wave 0.8s ease-in-out infinite alternate; animation-delay: 0.3s;"></div>
+                    <div style="width: 5px; height: 35px; background: var(--accent); border-radius: 3px; animation: wave 0.8s ease-in-out infinite alternate; animation-delay: 0.1s;"></div>
+                    <div style="width: 5px; height: 20px; background: var(--accent); border-radius: 3px; animation: wave 0.8s ease-in-out infinite alternate; animation-delay: 0.25s;"></div>
+                </div>
+
+                <div id="voice-transcript-box" style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; font-size: 0.9rem; min-height: 50px; margin-bottom: 20px; color: white; border: 1px solid rgba(255,255,255,0.05); text-align: center; font-style: italic;">
+                    "Tap to start listening..."
+                </div>
+
+                <button class="primary-btn" id="start-voice-record" style="background: linear-gradient(135deg, var(--accent), var(--primary)); margin-top: 0; margin-bottom: 12px; padding: 12px;">
+                    <i class="fa-solid fa-play"></i> Start Listening
+                </button>
+                <button class="primary-btn outline-btn" id="close-voice-btn" style="margin-top: 0; padding: 12px; border-color: rgba(255,255,255,0.2); color: white;">
+                    Cancel
+                </button>
+        </div>
+        <!-- Modern Smartphone Home Indicator / Swipe up line -->
+        <div class="home-indicator"></div>
+    </div>
+
+    <!-- Leaflet Map JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="main.js?v=2"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+    "liveServer.settings.ignoreFiles": [
+        "**/.git/**",
+        "**/node_modules/**",
+        "**/backend/**",
+        "**/uploads/**",
+        "**/*.pyc",
+        "**/__pycache__/**"
+    ]
+}

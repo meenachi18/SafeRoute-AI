@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SafeRoute AI</title>
+
+    <!-- Leaflet CSS -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet/dist/leaflet.css"
+    />
+
+    <!-- Routing Machine CSS -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css"
+    />
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:Arial, sans-serif;
+        }
+
+        body{
+            background:#0b1020;
+            overflow:hidden;
+        }
+
+        /* HEADER */
+
+        .header{
+            width:100%;
+            height:90px;
+            background:#081120;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:white;
+            font-size:40px;
+            font-weight:bold;
+            box-shadow:0px 4px 10px rgba(0,0,0,0.5);
+            z-index:1000;
+        }
+
+        /* CONTROL PANEL */
+
+        .controls{
+            width:100%;
+            height:100px;
+            background:#1a2235;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:20px;
+            z-index:1000;
+        }
+
+        .controls input{
+            width:260px;
+            padding:15px;
+            border:none;
+            border-radius:10px;
+            outline:none;
+            font-size:18px;
+            background:white;
+        }
+
+        .controls button{
+            padding:15px 25px;
+            border:none;
+            border-radius:10px;
+            background:linear-gradient(to right,#7c3aed,#ec4899);
+            color:white;
+            font-size:18px;
+            font-weight:bold;
+            cursor:pointer;
+            transition:0.3s;
+        }
+
+        .controls button:hover{
+            transform:scale(1.05);
+        }
+
+        /* MAP */
+
+        #map{
+            width:100%;
+            height:calc(100vh - 190px);
+        }
+
+        /* ALERT BOX */
+
+        .alert-box{
+            position:absolute;
+            top:220px;
+            right:20px;
+            width:280px;
+            background:#ef4444;
+            color:white;
+            padding:20px;
+            border-radius:15px;
+            z-index:9999;
+            box-shadow:0px 0px 20px rgba(0,0,0,0.4);
+            display:none;
+        }
+
+        .alert-box h2{
+            margin-bottom:10px;
+        }
+
+        .alert-box p{
+            font-size:18px;
+        }
+
+        /* HIDE LEAFLET ROUTE PANEL */
+
+        .leaflet-routing-container{
+            display:none;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+
+    <div class="header">
+        SafeRoute AI
+    </div>
+
+    <!-- CONTROL PANEL -->
+
+    <div class="controls">
+
+        <input
+            type="text"
+            id="source"
+            placeholder="Enter Source"
+        />
+
+        <input
+            type="text"
+            id="destination"
+            placeholder="Enter Destination"
+        />
+
+        <button onclick="startNavigation()">
+            Start Navigation
+        </button>
+
+        <button onclick="detectHazard()">
+            Detect Hazard
+        </button>
+
+    </div>
+
+    <!-- MAP -->
+
+    <div id="map"></div>
+
+    <!-- ALERT -->
+
+    <div class="alert-box" id="alertBox">
+
+        <h2>⚠ Hazard Warning</h2>
+
+        <p>
+            Pothole detected on your route.
+        </p>
+
+    </div>
+
+    <!-- LEAFLET JS -->
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <!-- ROUTING MACHINE JS -->
+
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+
+    <script>
+
+        // INITIAL MAP
+
+        var map = L.map('map').setView([9.9252, 78.1198], 10);
+
+        // REAL STREET MAP
+
+        L.tileLayer(
+            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+                attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }
+        ).addTo(map);
+
+        // CURRENT LOCATION MARKER
+
+        var currentMarker = L.marker([9.9252,78.1198])
+            .addTo(map)
+            .bindPopup("Current Location")
+            .openPopup();
+
+        // ROUTE VARIABLE
+
+        var routingControl;
+
+        // START NAVIGATION
+
+        function startNavigation(){
+
+            let source =
+                document.getElementById("source").value;
+
+            let destination =
+                document.getElementById("destination").value;
+
+            if(source === "" || destination === ""){
+
+                alert("Please enter source and destination");
+
+                return;
+            }
+
+            // DEMO COORDINATES
+
+            let sourceCoords = [9.9252,78.1198]; // Madurai
+
+            let destinationCoords = [10.3673,77.9803]; // Dindigul
+
+            // REMOVE OLD ROUTE
+
+            if(routingControl){
+
+                map.removeControl(routingControl);
+            }
+
+            // CREATE ROUTE
+
+            routingControl = L.Routing.control({
+
+                waypoints:[
+
+                    L.latLng(
+                        sourceCoords[0],
+                        sourceCoords[1]
+                    ),
+
+                    L.latLng(
+                        destinationCoords[0],
+                        destinationCoords[1]
+                    )
+
+                ],
+
+                routeWhileDragging:true,
+
+                lineOptions:{
+
+                    styles:[
+                        {
+                            color:'#7c3aed',
+                            weight:8
+                        }
+                    ]
+                },
+
+                createMarker:function(i,wp){
+
+                    return L.marker(wp.latLng);
+                }
+
+            }).addTo(map);
+
+            // HAZARD AFTER 4 SECONDS
+
+            setTimeout(function(){
+
+                L.circleMarker([10.05,78.05],{
+
+                    radius:10,
+                    color:"red",
+                    fillColor:"#ff0000",
+                    fillOpacity:0.9
+
+                })
+
+                .addTo(map)
+
+                .bindPopup("⚠ Pothole Detected")
+
+                .openPopup();
+
+                document.getElementById("alertBox")
+                    .style.display = "block";
+
+            },4000);
+        }
+
+        // DETECT HAZARD BUTTON
+
+        function detectHazard(){
+
+            document.getElementById("alertBox")
+                .style.display = "block";
+
+            L.circleMarker([10.02,78.02],{
+
+                radius:10,
+                color:"yellow",
+                fillColor:"orange",
+                fillOpacity:0.9
+
+            })
+
+            .addTo(map)
+
+            .bindPopup("⚠ Waterlogging Area")
+
+            .openPopup();
+        }
+
+        // REAL TIME LOCATION
+
+        navigator.geolocation.watchPosition(
+
+            function(position){
+
+                let lat =
+                    position.coords.latitude;
+
+                let lng =
+                    position.coords.longitude;
+
+                currentMarker.setLatLng([lat,lng]);
+
+            },
+
+            function(error){
+
+                console.log(error);
+
+            }
+
+        );
+
+    </script>
+
+</body>
+</html>
