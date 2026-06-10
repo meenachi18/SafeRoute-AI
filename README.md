@@ -1,4 +1,4 @@
-# Real-Time Road Hazard Detection and Smart Route Recommendation System
+__#SafeRoute AI: Intelligent Road Hazard Detection and Navigation System__
 
 A production-grade, full-stack AI web application that detects road hazards in CCTV videos and calculates safe routing paths dynamically. The frontend is built on **React.js (Vite)** with **Tailwind CSS** and **Leaflet.js**, while the backend is powered by **Flask** running a frame-by-frame **OpenCV Computer Vision** pipeline with a dual-database connectivity layer (**MongoDB** with automatic offline local **SQLite** fallback).
 
